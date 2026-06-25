@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import os from "os";
 import { getCPUUsage } from "./collectors/cpu/cpu";
 import { getDiskUsage } from "./collectors/disk/disk";
@@ -40,6 +42,8 @@ async function collectAndSendMetrics(serverId: string){
 
 
 async function startAgent(){
+
+    const metricsInterval = Number(process.env.METRIC_INTERVAL_SECONDS || 30) * 1000
     try{
         console.log("System Health Monitoring Agent Started");
 
@@ -67,7 +71,7 @@ async function startAgent(){
 
         setInterval(async () => {
             await collectAndSendMetrics(serverId);
-        }, 30000);
+        }, metricsInterval);
 
     } catch (error) {
         console.error("Error starting agent:", error);

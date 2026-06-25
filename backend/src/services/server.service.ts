@@ -18,18 +18,39 @@ export async function registerServer(hostname: string, ipAddress: string, osName
 }
 
 
+export async function getAllServers() {
+  const result = await pool.query(`
+    SELECT
+      s.id,
+      s.hostname,
+      s.status,
+      s.last_seen,
+      s.ip_address,
+      m.cpu_usage,
+      m.memory_usage,
+      m.disk_usage
+    FROM servers s
+    LEFT JOIN LATERAL (
+      SELECT
+        cpu_usage,
+        memory_usage,
+        disk_usage
+      FROM metrics
+      WHERE server_id = s.id
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) m ON true
+  `);
 
-export async function getAllServers(){
-    try{
-     const result =  await pool.query('SELECT * FROM servers ORDER BY created_at DESC');
-       return result.rows;
-
-    } catch(error){
-        console.error("failed to get all server data from db")
-        return;
-    }
-
-
+  return result.rows.map(row => ({
+    ...row,
+    cpu_usage:
+      row.cpu_usage !== null ? Number(row.cpu_usage) : null,
+    memory_usage:
+      row.memory_usage !== null ? Number(row.memory_usage) : null,
+    disk_usage:
+      row.disk_usage !== null ? Number(row.disk_usage) : null,
+  }));
 }
 
 
@@ -43,11 +64,15 @@ export async function getServerById(id: string){
 
 
 
-
 export async function getServerMetrics(id: string){
     const result = await pool.query(
         `SELECT * FROM metrics WHERE server_id = $1 ORDER BY created_at DESC LIMIT 100`, [id]
     );
 
-    return result.rows;
+    return result.rows.map(row => ({
+        ...row,
+        cpu_usage: Number(row.cpu_usage),
+        memory_usage: Number(row.memory_usage),
+        disk_usage: Number(row.disk_usage)
+    }));
 }

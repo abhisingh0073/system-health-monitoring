@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { connectToDatabase } from "./db";
 import serverRouter from "./routes/server.routes";
 import metricsRouter from "./routes/metrics.route";
+import { startOfflineChecker } from "./jobs/offline-checker";
 
 dotenv.config();
 
@@ -13,11 +14,34 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 connectToDatabase();
+startOfflineChecker();
+
+
 
 
 app.use("/api/servers", serverRouter);
 app.use("/api/metrics", metricsRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
+
+
+async function startServer(){
+  try{
+    await connectToDatabase();
+    startOfflineChecker();
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`)
+    })
+  } catch(error){
+    console.error("Application startup failed" , error);
+
+    process.exit(1);
+  }
+}
+
+
+startServer();
+
+
+
