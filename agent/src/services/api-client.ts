@@ -11,8 +11,8 @@ export async function registerServer(hostname: string, ipAddress: string, osName
 }
 
 
-export async function sendMetrics(serverId: string, cpuUsage: number, memoryUsage: number, diskUsage: number, uptimeSeconds: number): Promise<void> {
+export async function sendMetrics(serverId: string, cpuUsage: number, memoryUsage: number, diskUsage: number, uptimeSeconds: number, networkIn:Number, networkOut: Number): Promise<void> {
     const payload = await axios.post(
-        `${API_BASE_URL}/metrics`, { serverId, cpuUsage, memoryUsage, diskUsage, uptimeSeconds }
+        `${API_BASE_URL}/metrics`, { serverId, cpuUsage, memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut }
     );
 }

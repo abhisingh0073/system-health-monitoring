@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { postMetrics } from '../services/metrics.service';
 
 export async function postMetricsController(req: Request, res: Response): Promise<void> {
-    const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds} = req.body;
+    const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = req.body;
 
     if(!serverId || cpuUsage === undefined || memoryUsage === undefined || diskUsage === undefined || uptimeSeconds === undefined){
         res.status(400).json({error: "Missing required fields"});
@@ -10,7 +10,7 @@ export async function postMetricsController(req: Request, res: Response): Promis
     }
 
     try{
-        const id = await postMetrics(serverId, cpuUsage, memoryUsage, diskUsage, uptimeSeconds);
+        const id = await postMetrics(serverId, cpuUsage, memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut);
         res.status(201).json({id});
     } catch (error) {
         console.error("Error posting metrics:", error);
