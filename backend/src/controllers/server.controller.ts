@@ -1,18 +1,23 @@
 import { Request, Response } from "express";
 import { getAllServers, getServerById, getServerMetrics, registerServer } from "../services/server.service";
+import { RegisterServerSchema } from "../utils/validators";
 
 
-export async function registerServerController(req: Request, res: Response): Promise<void> {
+export async function registerServerController(req: Request, res: Response): Promise<any> {
     const { hostname, ipAddress, osName, agentVersion } = req.body;
 
-    if (!hostname || !ipAddress || !osName || !agentVersion) {
-        res.status(400).json({ error: 'Missing required fields' });
-        return;
-    }
+    const result = RegisterServerSchema.safeParse(req.body);
+        if(!result.success){
+            return res.status(400).json({
+                success: false,
+                message: "validation failed",
+                error: result.error.flatten(),
+            });
+        }
 
     try{
         const id = await registerServer(hostname, ipAddress, osName, agentVersion)
-        res.status(200).json({success: true, serverId: id});
+        res.status(201).json({success: true, serverId: id});
     }
     catch(error){
         res.status(500).json({error: 'Failed to register server'});

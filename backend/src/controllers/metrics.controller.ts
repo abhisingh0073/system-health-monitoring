@@ -1,13 +1,26 @@
 import { Request, Response } from 'express';
 import { postMetrics } from '../services/metrics.service';
+import { PostMetricsSchema } from '../utils/validators';
 
-export async function postMetricsController(req: Request, res: Response): Promise<void> {
-    const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = req.body;
+export async function postMetricsController(req: Request, res: Response): Promise<any> {
+    // const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = req.body;
 
-    if(!serverId || cpuUsage === undefined || memoryUsage === undefined || diskUsage === undefined || uptimeSeconds === undefined){
-        res.status(400).json({error: "Missing required fields"});
-        return;
-    }
+    // if(!serverId || cpuUsage === undefined || memoryUsage === undefined || diskUsage === undefined || uptimeSeconds === undefined){
+    //     res.status(400).json({error: "Missing required fields"});
+    //     return;
+    // }
+
+        const result = PostMetricsSchema.safeParse(req.body);
+        if(!result.success){
+            return res.status(400).json({
+                success: false,
+                message: "validation failed",
+                error: result.error.flatten(),
+            });
+        }
+
+        const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = result.data;
+
 
     try{
         const id = await postMetrics(serverId, cpuUsage, memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut);
