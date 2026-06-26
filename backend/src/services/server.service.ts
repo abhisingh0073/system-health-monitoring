@@ -44,12 +44,9 @@ export async function getAllServers() {
 
   return result.rows.map(row => ({
     ...row,
-    cpu_usage:
-      row.cpu_usage !== null ? Number(row.cpu_usage) : null,
-    memory_usage:
-      row.memory_usage !== null ? Number(row.memory_usage) : null,
-    disk_usage:
-      row.disk_usage !== null ? Number(row.disk_usage) : null,
+    cpu_usage: row.cpu_usage !== null ? Number(row.cpu_usage) : null,
+    memory_usage: row.memory_usage !== null ? Number(row.memory_usage) : null,
+    disk_usage: row.disk_usage !== null ? Number(row.disk_usage) : null,
   }));
 }
 

@@ -6,8 +6,9 @@ import { getDiskUsage } from "./collectors/disk/disk";
 import { getHostname } from "./collectors/hostnames/hostname";
 import { getMemoryUsage } from "./collectors/memory/memory";
 import { getUptime } from "./collectors/uptime/uptime";
-import { registerServer, sendMetrics } from "./services/api-client";
+import { registerServer, sendMetrics, sendServices } from "./services/api-client";
 import { getNetworkUsage } from "./collectors/network/network";
+import { getServicesStatus } from "./collectors/services/services";
 
 
 async function collectAndSendMetrics(serverId: string){
@@ -17,19 +18,21 @@ async function collectAndSendMetrics(serverId: string){
         const diskUsage = getDiskUsage();
         const uptimeSeconds =  getUptime();
 
-        const network = getNetworkUsage();
+        const {networkIn, networkOut} = getNetworkUsage();
 
-        const networkIn =  network.networkIn;
-        const networkOut =  network.networkOut;
+        const services = getServicesStatus();
 
-        console.log("collected metrics", {
+        const snapshot = {
             cpuUsage,
             memoryUsage,
             diskUsage,
             uptimeSeconds,
             networkIn,
             networkOut,
-        });
+            services,
+        };
+
+        console.log(snapshot);
 
         await sendMetrics(
             serverId,
@@ -40,6 +43,8 @@ async function collectAndSendMetrics(serverId: string){
             networkIn,
             networkOut,
         )
+
+        await sendServices(serverId, snapshot.services);
 
         console.log("Metrics sent successfully");
 

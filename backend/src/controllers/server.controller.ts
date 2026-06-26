@@ -6,6 +6,7 @@ import { RegisterServerSchema } from "../utils/validators";
 export async function registerServerController(req: Request, res: Response): Promise<any> {
     const { hostname, ipAddress, osName, agentVersion } = req.body;
 
+    // to check every data should be valid
     const result = RegisterServerSchema.safeParse(req.body);
         if(!result.success){
             return res.status(400).json({

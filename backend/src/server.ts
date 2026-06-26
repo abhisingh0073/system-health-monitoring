@@ -4,6 +4,7 @@ import { connectToDatabase } from "./db";
 import serverRouter from "./routes/server.routes";
 import metricsRouter from "./routes/metrics.route";
 import { startOfflineChecker } from "./jobs/offline-checker";
+import servicesRouter from "./routes/services.route";
 
 dotenv.config();
 
@@ -13,14 +14,11 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-connectToDatabase();
-startOfflineChecker();
 
-
-
-
+// APIs
 app.use("/api/servers", serverRouter);
 app.use("/api/metrics", metricsRouter);
+app.use("/api/services", servicesRouter)
 
 
 
