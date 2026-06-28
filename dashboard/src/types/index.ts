@@ -18,6 +18,8 @@ export interface Metric {
   disk_usage: number;
   uptime_seconds: number;
   created_at: string;
+  network_in: number;
+  network_out: number;
 }
 
 // export interface ServerWithLatestMetric extends Server {

@@ -26,3 +26,23 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
     throw error;
   }
 }
+
+
+
+export async function getServerServices(serverId: string) {
+  const result = await pool.query(
+    `
+    SELECT
+      id,
+      service_name,
+      status,
+      last_checked
+    FROM services
+    WHERE server_id = $1
+    ORDER BY service_name ASC
+    `,
+    [serverId]
+  );
+
+  return result.rows;
+}

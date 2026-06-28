@@ -75,3 +75,4 @@ export async function getServerMetricsController(req: Request, res:Response): Pr
         res.status(500).json({error: " failed to load the data"})
     }
 }
+
