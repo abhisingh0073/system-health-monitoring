@@ -9,10 +9,10 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import type { Metric } from "@/types";
+import type { Metrics } from "@/types";
 
 interface MetricsChartsProps {
-  metrics: Metric[];
+  metrics: Metrics[];
 }
 
 function formatTime(dateStr: string): string {
@@ -27,7 +27,7 @@ function getColor(value: number): string {
 }
 
 interface ChartConfig {
-  key: keyof Metric;
+  key: keyof Metrics;
   label: string;
   color: string;
 }
@@ -51,6 +51,7 @@ function SingleChart({
 }) {
   const latest = data[data.length - 1]?.value;
   const dynamicColor = latest != null ? getColor(latest) : color;
+
 
   return (
     <div
@@ -122,6 +123,7 @@ function SingleChart({
 }
 
 export function MetricsCharts({ metrics }: MetricsChartsProps) {
+
   if (!metrics || metrics.length === 0) {
     return (
       <div
@@ -136,11 +138,14 @@ export function MetricsCharts({ metrics }: MetricsChartsProps) {
     );
   }
 
+  
+
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {charts.map(({ key, label, color }) => {
         const data = [...metrics]
-          .reverse()
           .map((m) => ({
             time: formatTime(m.created_at),
             value: Number(m[key]),

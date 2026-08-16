@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import type { Server } from "@/types/server";
-import type { Metric } from "@/types";
+import type { Metrics } from "@/types";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -17,7 +17,7 @@ export async function getServerById(id: string) {
 }
 
 export async function getServerMetrics(id: string) {
-  return api.get<ApiResponse<Metric[]>>(
+  return api.get<ApiResponse<Metrics[]>>(
     `/servers/${id}/metrics`
   );
 }

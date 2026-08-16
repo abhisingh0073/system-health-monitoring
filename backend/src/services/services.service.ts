@@ -1,4 +1,5 @@
 import { pool } from "../db";
+import { emitServicesUpdated } from "../socket/emitter";
 
 interface ServicesStatus{
     service: string,
@@ -21,6 +22,13 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
         [ serverId, service.service, service.status,]
       );
     }
+
+      //websocket
+      emitServicesUpdated({
+        serverId,
+        services,
+      });
+      
   } catch (error) {
     console.error("Failed to save services:", error);
     throw error;
@@ -43,6 +51,10 @@ export async function getServerServices(serverId: string) {
     `,
     [serverId]
   );
+
+
+
+  console.log(result);
 
   return result.rows;
 }

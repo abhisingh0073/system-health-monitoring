@@ -1,16 +1,5 @@
-// export type ServerStatus = "online" | "offline" | "unknown";
 
-// export interface Server {
-//   id: string;
-//   hostname: string;
-//   ip_address: string;
-//   os: string;
-//   status: ServerStatus;
-//   last_seen: string;
-//   created_at: string;
-// }
-
-export interface Metric {
+export interface Metrics {
   id: string;
   server_id: string;
   cpu_usage: number;
@@ -22,19 +11,3 @@ export interface Metric {
   network_out: number;
 }
 
-// export interface ServerWithLatestMetric extends Server {
-//   cpu?: number;
-//   memory?: number;
-//   disk?: number;
-// }
-
-// export interface DashboardServer {
-//   id: string;
-//   hostname: string;
-//   ip_address: string;
-//   status: ServerStatus;
-//   cpu: number | null;
-//   memory: number | null;
-//   disk: number | null;
-//   last_seen: string;
-// }

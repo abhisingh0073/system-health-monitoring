@@ -29,6 +29,8 @@ export function ServicesCard({ services }: ServicesCardProps) {
     (a, b) => statusOrder(a.status) - statusOrder(b.status)
   );
 
+  console.log("services: ",services);
+
   const running = services.filter((s) => s.status === "running").length;
   const stopped = services.filter((s) => s.status === "stopped").length;
 

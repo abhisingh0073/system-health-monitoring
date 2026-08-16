@@ -1,16 +1,44 @@
+"use client";
+
+// import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Server } from "@/types/server";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatLastSeen } from "@/services/utils";
 import { MetricBadge } from "./MetricBadge";
+import { useSocketData } from "@/providers/SocketContext";
+import { useNow } from "@/hooks/useNow";
 // import { serverService } from "@/services/server.service";
 
 interface ServerTableProps {
   servers: readonly Server[];
 }
 
+
 export function ServerTable({ servers }: ServerTableProps) {
+
+/// it will update the component every 10 seconds to reflect the latest last seen time for each server in the table.
+  // const now = useNow(10000); 
+
+  const { metricsByServer, offlineServers } = useSocketData();
+  
+  const liveServers = servers.map((server) => {
+  const liveMetric = metricsByServer[server.id];
+  const offline = offlineServers[server.id];
+
+
+    return{
+      ...server,
+      status: offline ? "offline" : liveMetric ? "online" : server.status,
+      last_seen: offline ? offline.lastSeen : liveMetric ? liveMetric.created_at : server.last_seen,
+      cpu_usage: liveMetric ? liveMetric.cpuUsage : server.cpu_usage, 
+      memory_usage: liveMetric ? liveMetric.memoryUsage : server.memory_usage,
+      disk_usage: liveMetric ? liveMetric.diskUsage : server.disk_usage,
+    }
+  })
+
   if (servers.length === 0) {
     return (
       <div
@@ -52,7 +80,7 @@ export function ServerTable({ servers }: ServerTableProps) {
 
       {/* Rows */}
       <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-        {servers.map((server) => (
+        {liveServers.map((server) => (
           <Link
             key={server.id}
             href={`/servers/${server.id}`}

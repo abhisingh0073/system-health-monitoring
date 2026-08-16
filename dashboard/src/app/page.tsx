@@ -3,6 +3,8 @@ import { StatCard } from "@/components/StatCard";
 import { ServerTable } from "@/components/ServerTable";
 import type { Server } from "@/types/server";
 import { getAllServers } from "@/services/server.service";
+// import { LiveServerMetrics } from "@/components/LiveServerMetrics";
+import { LiveOverview } from "@/components/LiveOverview";
 
 async function getServers(): Promise<Server[]> {
   try {
@@ -23,17 +25,17 @@ export default async function OverviewPage() {
   return (
     <div className="space-y-8">
       {/* Page heading */}
-      <div>
+      {/* <div>
         <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Overview</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">
           {servers.length === 0
             ? "No agents reporting yet."
             : `Monitoring ${servers.length} server${servers.length !== 1 ? "s" : ""}`}
         </p>
-      </div>
+      </div> */}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Total Servers" value={servers.length} />
         <StatCard
           label="Online"
@@ -43,13 +45,22 @@ export default async function OverviewPage() {
         />
         <StatCard label="Offline" value={offline} accent={offline > 0 ? "var(--red)" : undefined} />
         <StatCard label="Unknown" value={unknown} accent={unknown > 0 ? "var(--yellow)" : undefined} />
+      </div> */}
+
+      <div>
+        <h2>
+          Live Metrics
+        </h2>
+
+        {/* <LiveServerMetrics/> */}
+        <LiveOverview servers={servers} />
       </div>
 
       {/* Server table */}
-      <div>
+      {/* <div>
         <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">All Servers</h2>
         <ServerTable servers={servers} />
-      </div>
+      </div> */}
     </div>
   );
 }

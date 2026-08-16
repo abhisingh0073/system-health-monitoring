@@ -4,15 +4,19 @@ import { connectToDatabase } from "./db";
 import serverRouter from "./routes/server.routes";
 import metricsRouter from "./routes/metrics.route";
 import { startOfflineChecker } from "./jobs/offline-checker";
+import http from "http";
+import { createServer } from "http";
 import servicesRouter from "./routes/services.route";
+import { initializeSocket } from "./socket/socket";
 
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
 
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3456;
 
 
 // APIs
@@ -27,10 +31,13 @@ async function startServer(){
   try{
     await connectToDatabase();
     startOfflineChecker();
+    initializeSocket(server);
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`)
     })
+
+
   } catch(error){
     console.error("Application startup failed" , error);
 

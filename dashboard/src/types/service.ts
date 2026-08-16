@@ -1,5 +1,6 @@
 export type ServiceStatus = "running" | "stopped" | "not_installed";
 
+
 export interface Service {
   id: number;
   service_name: string;

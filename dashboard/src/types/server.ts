@@ -1,5 +1,10 @@
 export type ServerStatus = "online" | "offline" | "unknown";
 
+export type ServerOfflineData = {
+  serverId: string;
+  hostname: string;
+  lastSeen: string;
+};
 
 export interface Server {
   id: string;
