@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { getAllServers, getServerById, getServerMetrics, registerServer } from "../services/server.service";
 import { RegisterServerSchema } from "../utils/validators";
+import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
 
 export async function registerServerController(req: Request, res: Response): Promise<any> {
+    const userId = req.user!.userId;
+
     const { hostname, ipAddress, osName, agentVersion } = req.body;
 
     // to check every data should be valid
@@ -17,7 +20,7 @@ export async function registerServerController(req: Request, res: Response): Pro
         }
 
     try{
-        const id = await registerServer(hostname, ipAddress, osName, agentVersion)
+        const id = await registerServer(hostname, ipAddress, osName, agentVersion, userId)
         res.status(201).json({success: true, serverId: id});
     }
     catch(error){
@@ -28,9 +31,11 @@ export async function registerServerController(req: Request, res: Response): Pro
 
 
 
-export async function getAllServersController(req: Request, res: Response): Promise<void>{
+export async function getAllServersController(req: AuthenticatedRequest, res: Response): Promise<void>{
     try{
-        const data = await getAllServers();
+        const userId = req.user!.userId;
+
+        const data = await getAllServers(userId);
         res.status(201).json({success: true,count:data?.length, data: data})
 
     } catch(error){
@@ -40,11 +45,12 @@ export async function getAllServersController(req: Request, res: Response): Prom
 
 
 
-export async function getServerByIdController(req: Request, res:Response):Promise<void>{
-    const id = req.params.id as string;
+export async function getServerByIdController(req: AuthenticatedRequest, res:Response):Promise<void>{
+    const serverId = req.params.id as string;
 
     try{
-        const data = await getServerById(id);
+        const userId = req.user!.userId;
+        const data = await getServerById(serverId, userId);
 
         if(!data) {
             res.status(404).json({success: false, message: "Server not found"});
@@ -59,11 +65,12 @@ export async function getServerByIdController(req: Request, res:Response):Promis
 
 
 
-export async function getServerMetricsController(req: Request, res:Response): Promise<void>{
-    const id = req.params.id as string;
+export async function getServerMetricsController(req: AuthenticatedRequest, res:Response): Promise<void>{
+    const serverId = req.params.id as string;
 
     try{
-        const data = await getServerMetrics(id);
+        const userId = req.user!.userId;
+        const data = await getServerMetrics(serverId, userId);
 
         if(!data){
             res.status(404).json({success:false, message: "Server not found" })

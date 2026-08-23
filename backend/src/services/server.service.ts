@@ -1,7 +1,7 @@
 import { pool } from "../db";
 
 
-export async function registerServer(hostname: string, ipAddress: string, osName: string, agentVersion:string): Promise<string>{
+export async function registerServer(hostname: string, ipAddress: string, osName: string, agentVersion:string, userId:string): Promise<string>{
 
     const foundIp = await pool.query('SELECT id FROM servers WHERE ip_address = $1', [ipAddress]);
     if(foundIp.rows.length > 0){
@@ -9,8 +9,8 @@ export async function registerServer(hostname: string, ipAddress: string, osName
     }
 
     const result  = await pool.query(
-        'INSERT INTO servers (hostname, ip_address, os_name, agent_version, status, last_seen) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-        [hostname, ipAddress, osName, agentVersion, 'online', new Date()]
+        'INSERT INTO servers (hostname, ip_address, os_name, agent_version, status, last_seen, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+        [hostname, ipAddress, osName, agentVersion, 'online', new Date(), userId]
     );
 
     console.log("server registered data:", result.rows[0]);
@@ -18,7 +18,7 @@ export async function registerServer(hostname: string, ipAddress: string, osName
 }
 
 
-export async function getAllServers() {
+export async function getAllServers(userId: string) {
   const result = await pool.query(`
     SELECT
       s.id,
@@ -40,7 +40,10 @@ export async function getAllServers() {
       ORDER BY created_at DESC
       LIMIT 1
     ) m ON true
-  `);
+
+    WHERE s.user_id = $1
+    ORDER BY s.created_at DESC
+  `, [userId]);
 
   return result.rows.map(row => ({
     ...row,
@@ -51,20 +54,27 @@ export async function getAllServers() {
 }
 
 
-export async function getServerById(id: string){
+export async function getServerById(serverId: string, userId: string){
     const result = await pool.query(
-        `SELECT * FROM servers WHERE id = $1`, [id]
+        `SELECT * FROM servers WHERE id = $1 AND user_id = $2`, [serverId, userId]
     )
 
-    return result.rows[0];
+    return result.rows[0] ?? null;
 }
 
 
 
-export async function getServerMetrics(id: string){
+export async function getServerMetrics(serverId: string, userId: string){
     const result = await pool.query(
-        `SELECT * FROM metrics WHERE server_id = $1 ORDER BY created_at DESC LIMIT 100`, [id]
-    );
+          `SELECT m.* FROM metrics m
+           INNER JOIN servers s
+               ON s.id = m.server_id
+           WHERE m.server_id = $1 AND s.user_id = $2
+           ORDER BY m.created_at DESC
+           LIMIT 100
+           `,
+           [serverId, userId]
+       );
 
     return result.rows.map(row => ({
         ...row,

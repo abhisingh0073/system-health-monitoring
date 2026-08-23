@@ -8,7 +8,9 @@ export function initializeSocket(server: HTTPServer): SocketIOServer{
     io = new SocketIOServer(server, {
         cors: {
             origin: "*",
-            methods: ["GET", "POST"],
+            credentials: true,
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"],
         },
     });
     

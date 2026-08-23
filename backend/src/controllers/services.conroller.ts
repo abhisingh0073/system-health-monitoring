@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getServerServices, postServices } from "../services/services.service";
+import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
 
 export async function postServicesController(req:Request, res:Response): Promise<void> {
@@ -27,11 +28,12 @@ export async function postServicesController(req:Request, res:Response): Promise
 
 
 
-export async function getServerServicesController(req: Request,res: Response): Promise<void> {
+export async function getServerServicesController(req: AuthenticatedRequest,res: Response): Promise<void> {
   try {
     const serverId = req.params.id as string;
+    const userId = req.user!.userId;
 
-    const services = await getServerServices(serverId);
+    const services = await getServerServices(serverId, userId);
 
     res.status(200).json({
       success: true,

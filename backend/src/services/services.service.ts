@@ -37,19 +37,16 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
 
 
 
-export async function getServerServices(serverId: string) {
+export async function getServerServices(serverId: string, userId: string) {
   const result = await pool.query(
-    `
-    SELECT
-      id,
-      service_name,
-      status,
-      last_checked
-    FROM services
-    WHERE server_id = $1
-    ORDER BY service_name ASC
+  `SELECT sv.*
+    FROM services sv
+    INNER JOIN servers s
+        ON s.id = sv.server_id
+    WHERE sv.server_id = $1
+    AND s.user_id = $2
     `,
-    [serverId]
+    [serverId, userId]
   );
 
 

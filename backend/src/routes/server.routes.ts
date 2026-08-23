@@ -1,12 +1,13 @@
 import {Router} from 'express';
 import { getAllServersController, getServerByIdController, getServerMetricsController, registerServerController } from '../controllers/server.controller';
 import { getServerServicesController } from '../controllers/services.conroller';
+import { authMiddleWare } from '../middleware/auth.middleware';
 
 const serverRouter = Router();
 serverRouter.post('/register', registerServerController);
-serverRouter.get("/", getAllServersController);
-serverRouter.get("/:id", getServerByIdController);
-serverRouter.get("/:id/metrics", getServerMetricsController);
-serverRouter.get("/:id/services", getServerServicesController);
+serverRouter.get("/", authMiddleWare,  getAllServersController);
+serverRouter.get("/:id", authMiddleWare,  getServerByIdController);
+serverRouter.get("/:id/metrics", authMiddleWare,  getServerMetricsController);
+serverRouter.get("/:id/services", authMiddleWare,  getServerServicesController);
 
 export default serverRouter;
