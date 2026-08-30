@@ -1,11 +1,15 @@
 import { Request, Response } from 'express';
 import { postMetrics } from '../services/metrics.service';
 import { PostMetricsSchema } from '../utils/validators';
+import { AgentAuthenticatedRequest } from '../middleware/agent.middleware';
 
-export async function postMetricsController(req: Request, res: Response): Promise<any> {
+export async function postMetricsController(req: AgentAuthenticatedRequest, res: Response): Promise<any> {
+
+    const serverId = req.agent!.serverId;
 
     // to check every data should be valid
         const result = PostMetricsSchema.safeParse(req.body);
+        
         if(!result.success){
             return res.status(400).json({
                 success: false,
@@ -14,7 +18,7 @@ export async function postMetricsController(req: Request, res: Response): Promis
             });
         }
 
-        const {serverId, cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = result.data;
+        const {cpuUsage , memoryUsage, diskUsage, uptimeSeconds, networkIn, networkOut} = result.data;
 
 
     try{

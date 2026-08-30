@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Server, LayoutDashboard } from "lucide-react";
+import { Activity, Server, LayoutDashboard, User } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
@@ -50,10 +50,15 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <span className="text-xs text-[var(--text-muted)]">Live · 30s refresh</span>
           <span className="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse" />
-        </div>
+        </div> */}
+        <button
+          className="p-1.5 rounded-full cursor-pointer hover:bg-[var(--surface-2)] transition-colors"
+        >
+          <User size={25}/>
+        </button>
       </div>
     </header>
   );

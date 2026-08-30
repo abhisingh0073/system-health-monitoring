@@ -7,13 +7,16 @@ async function request<T>(
 ): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
+
+    credentials: "include",
+
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    next: {
-        revalidate: 30,
-    },
+    // next: {
+    //     revalidate: 30,
+    // },
   });
 
   if (!response.ok) {

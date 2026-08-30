@@ -5,12 +5,14 @@ import type { Server, ServerStatus } from "@/types/server";
 import { StatCard } from "@/components/StatCard";
 import { ServerTable } from "@/components/ServerTable";
 import { useSocketData } from "@/providers/SocketContext";
+import { useRouter } from "next/navigation";
 
 type Props = {
   servers: Server[];
 };
 
 export function LiveOverview({ servers: initialServers }: Props) {
+   const router = useRouter();
   const [servers, setServers] = useState<Server[]>(initialServers);
 
   const { metricsByServer, offlineServers } = useSocketData();
@@ -107,10 +109,19 @@ export function LiveOverview({ servers: initialServers }: Props) {
 
       {/* Server Table */}
 
-      <div>
+      <div className="mt-3">
+        <div className="flex items-center justify-between mb-2">
+
         <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
           All Servers
         </h2>
+
+        <button className="flex items-center gap-1.5 border border-[var(--border)] hover:bg-[var(--border)] cursor-pointer px-3 py-1.5 rounded-md fond-mdedium transition-colors"
+                onClick={() => router.push("/add-server")}
+        >
+          <span>+</span> Add Servers
+        </button>
+        </div>
 
         <ServerTable servers={liveServers} />
       </div>

@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import { getServerServices, postServices } from "../services/services.service";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
+import { AgentAuthenticatedRequest } from "../middleware/agent.middleware";
 
 
-export async function postServicesController(req:Request, res:Response): Promise<void> {
+export async function postServicesController(req:AgentAuthenticatedRequest, res:Response): Promise<void> {
 
-    const {serverId, services} = req.body;
+    const serverId = req.agent!.serverId;
+    const {services} = req.body;
 
     try{
         await postServices(serverId, services);

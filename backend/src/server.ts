@@ -11,6 +11,7 @@ import { createServer } from "http";
 import servicesRouter from "./routes/services.route";
 import { initializeSocket } from "./socket/socket";
 import authRouter from "./routes/auth.route";
+import enrollmentRouter from "./routes/enrollmentRouter";
 
 dotenv.config();
 
@@ -19,9 +20,9 @@ const server = createServer(app);
 
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
     credentials: true,
-    methods: ["GET", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 )
@@ -37,6 +38,7 @@ app.use("/api/servers", serverRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/enrollment", enrollmentRouter);
 
 
 

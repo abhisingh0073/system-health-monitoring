@@ -1,7 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+
 interface AccessTokenPayload{
     userId: string;
+}
+
+export interface AuthenticatedRequest extends Request{
+    user?: {
+        userId: string;
+    }
 }
 
 function getJWTSecret(): string {
@@ -15,14 +22,11 @@ function getJWTSecret(): string {
 }
 
 
-export interface AuthenticatedRequest extends Request{
-    user?: {
-        userId: string;
-    }
-}
+
+// const JWT_SECRET = process.env.JWT_SECRET!;
 
 
-export function authMiddleWare(req: AuthenticatedRequest, res: Response, next: NextFunction): void{
+export function authMiddleWare(req: AuthenticatedRequest, res: Response, next: NextFunction){
     const token = req.cookies?.access_token;
 
     if(!token){
@@ -34,6 +38,7 @@ export function authMiddleWare(req: AuthenticatedRequest, res: Response, next: N
         const payload = jwt.verify(token, getJWTSecret()) as AccessTokenPayload;
 
         req.user = {userId: payload.userId};
+        
         next();
         
     } catch(error){

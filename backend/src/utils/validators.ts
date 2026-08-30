@@ -10,7 +10,7 @@ export const RegisterServerSchema = z.object({
 
 
 export const PostMetricsSchema = z.object({
-  serverId: z.uuid(),
+//   serverId: z.uuid(),
 
   cpuUsage: z.number().min(0).max(100),
 

@@ -4,7 +4,7 @@ import { RegisterServerSchema } from "../utils/validators";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
 
-export async function registerServerController(req: Request, res: Response): Promise<any> {
+export async function registerServerController(req: AuthenticatedRequest, res: Response): Promise<any> {
     const userId = req.user!.userId;
 
     const { hostname, ipAddress, osName, agentVersion } = req.body;

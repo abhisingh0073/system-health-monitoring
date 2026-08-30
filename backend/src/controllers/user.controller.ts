@@ -68,12 +68,11 @@ export async function UserRegisterController(req: Request, res: Response):Promis
 
 export async function userLoginController(req: Request, res: Response):Promise<any> {
     const result = LoginUserSchema.safeParse(req.body);
-    console.log(result.data);
     
     if(!result.success){
         res.status(400).json({
             success: false,
-            message: "Email or Password is not Correct",
+            message: "Email does not exist",
             error:  result.error.flatten().fieldErrors,
         })
         return;

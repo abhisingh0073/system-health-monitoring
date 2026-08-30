@@ -4,7 +4,7 @@ import { getServerServicesController } from '../controllers/services.conroller';
 import { authMiddleWare } from '../middleware/auth.middleware';
 
 const serverRouter = Router();
-serverRouter.post('/register', registerServerController);
+// serverRouter.post('/register', authMiddleWare, registerServerController);
 serverRouter.get("/", authMiddleWare,  getAllServersController);
 serverRouter.get("/:id", authMiddleWare,  getServerByIdController);
 serverRouter.get("/:id/metrics", authMiddleWare,  getServerMetricsController);
