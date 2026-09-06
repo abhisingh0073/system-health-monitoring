@@ -1,7 +1,7 @@
 import { pool } from "../db";
 import { generateAgentToken } from "../lib/agent-token";
 import { generateEnrollmentToken, hashEnrollmentToken } from "../lib/enrollment-token";
-import { saveAgentToken } from "./agent-token.service";
+import { saveAgentToken, hashAgentToken } from "./agent-token.service";
 
 interface ConnectServerData{
     token: string,
@@ -90,8 +90,8 @@ export async function connectServerWithEnrollmentToken(data: ConnectServerData){
 
         // this is use to create unique agent token for this server 
         const agentToken = generateAgentToken();
-
-        saveAgentToken(server.id, agentToken); // it use to save the agent token  in map
+        const agentTokenHash = hashAgentToken(agentToken)
+        saveAgentToken(server.id, agentTokenHash); // it use to save the agent token  in map
 
         return {server, agentToken};
 

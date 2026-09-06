@@ -20,10 +20,7 @@ export function LiveOverview({ servers: initialServers }: Props) {
   useEffect(() => {setServers(initialServers);
   }, [initialServers]);
 
-  /*
-   * Merge live metrics from Socket.IO
-   * into the server objects.
-   */
+  
 
   const liveServers: Server[] = servers.map((server): Server => {
   const metrics = metricsByServer[server.id];

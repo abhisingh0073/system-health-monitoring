@@ -1,49 +1,37 @@
-
-// const agentTokens = new Map<string, string>();
-
-// export function saveAgentToken(serverId: string, agentToken: string): void{
-//     agentTokens.set(agentToken, serverId);
-// }
+import crypto from "crypto";
+import { pool } from "../db";
 
 
-// export function getAgentToken(serverId: string): string | undefined{
-//     return agentTokens.get(serverId);
-// }
+export async function saveAgentToken(serverId: string, hashAgentToken: string): Promise<void> {
+            await pool.query(`UPDATE servers SET  agent_token_hash = $1 WHERE
+                id = $2`, [hashAgentToken, serverId]);
 
-// // export function getServerIdByAgentToken(
-// //     agentToken: string
-// // ): string | undefined {
-// //     for (const [serverId, token] of agentTokens.entries()) {
-// //         if (token === agentToken) {
-// //             return serverId;
-// //         }
-// //     }
-
-// //     return undefined;
-// // }
-
-
-// export function removeAgentToken(serverId: string): void{
-//     agentTokens.delete(serverId);
-// }
-
-
-
-
-const agentTokens = new Map<string, string>();
-
-export function saveAgentToken(serverId: string,agentToken: string): void {
-            console.log("serverId: ", serverId, "agenttoken: ", agentToken);
-
-    agentTokens.set(agentToken, serverId);
 }
 
 
-export function getServerIdByAgentToken( agentToken: string): string | undefined {
-    return agentTokens.get(agentToken);
+export async function getServerIdByAgentToken( agentToken: string): Promise<string | undefined> {
+
+    const agentTokenHash = hashAgentToken(agentToken);
+
+    const result = await pool.query(
+        `SELECT id FROM servers WHERE agent_token_hash = $1`, [agentTokenHash]
+    );
+
+    if(result.rows.length === 0){
+        return undefined;
+    }
+
+    return result.rows[0].id;
+}
+ 
+
+export async function removeAgentToken( serverId: string): Promise<void> {
+    
+    await pool.query(`UPDATE servers SET agent_token_hash = NULL WHERE id = $1`, [serverId]);
 }
 
 
-export function removeAgentToken( agentToken: string): void {
-    agentTokens.delete(agentToken);
+
+export function hashAgentToken(token: string): string{
+    return crypto.createHash("sha256").update(token).digest("hex");
 }

@@ -141,14 +141,6 @@ const currentServices: Service[] = liveServices
 
   return (
     <div className="space-y-6">
-      {/* Back link */}
-      <Link
-        href="/servers"
-        className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-      >
-        <ArrowLeft size={12} />
-        Back to Servers
-      </Link>
 
       {/* Hero: server info + current metrics */}
       <ServerCard server={liveServer} latestMetric={latestMetric} />

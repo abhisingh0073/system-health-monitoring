@@ -8,4 +8,6 @@ export const SOCKET_EVENTS = {
   SERVER_OFFLINE: "serverOffline",
 
   ALERT_CREATED: "alertCreated",
+
+  ALERT_RESOLVED: "alertResolved",
 } as const;

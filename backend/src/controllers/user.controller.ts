@@ -65,7 +65,6 @@ export async function UserRegisterController(req: Request, res: Response):Promis
 
 
 
-
 export async function userLoginController(req: Request, res: Response):Promise<any> {
     const result = LoginUserSchema.safeParse(req.body);
     

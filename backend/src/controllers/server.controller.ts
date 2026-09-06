@@ -32,7 +32,11 @@ export async function registerServerController(req: AuthenticatedRequest, res: R
 
 
 export async function getAllServersController(req: AuthenticatedRequest, res: Response): Promise<void>{
-    try{
+    try{ 
+
+        console.log("===== GET SERVERS =====");
+console.log("User:", req.user);
+
         const userId = req.user!.userId;
 
         const data = await getAllServers(userId);

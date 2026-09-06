@@ -28,17 +28,17 @@ function getJWTSecret(): string {
 
 export function authMiddleWare(req: AuthenticatedRequest, res: Response, next: NextFunction){
     const token = req.cookies?.access_token;
-
+console.log("Access token from cookies:", token);
     if(!token){
         res.status(401).json({success: false, message: "You are not loggedIn"});
         return;
     }
 
     try{
-        const payload = jwt.verify(token, getJWTSecret()) as AccessTokenPayload;
 
+        console.log("hii thisis abhishek")
+        const payload = jwt.verify(token, getJWTSecret()) as AccessTokenPayload;
         req.user = {userId: payload.userId};
-        
         next();
         
     } catch(error){

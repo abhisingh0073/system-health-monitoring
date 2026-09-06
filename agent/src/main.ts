@@ -12,6 +12,7 @@ import { getUptime } from "./collectors/uptime/uptime";
 import { connectServer, sendMetrics, sendServices } from "./services/api-client";
 import { getNetworkUsage } from "./collectors/network/network";
 import { getServicesStatus } from "./collectors/services/services";
+import { loadCredentials, saveCredentials } from "./services/credentials.service";
 
 
 
@@ -35,7 +36,7 @@ async function collectAndSendMetrics(serverId: string, agentToken: string){
             networkOut,
             services,
         };
-        console.log("hii")
+        
         console.log(snapshot);
 
         await sendMetrics(
@@ -70,15 +71,28 @@ async function collectAndSendMetrics(serverId: string, agentToken: string){
 
 
 async function startAgent(){
-    const token = process.env.ENROLLMENT_TOKEN;
 
-    if(!token){
-        throw new Error("Enrollment_token is not configured");
-    }
+    const metricsInterval = Number(process.env.METRIC_INTERVAL_SECONDS || 30) * 1000;
 
-    const metricsInterval = Number(process.env.METRIC_INTERVAL_SECONDS || 30) * 1000
     try{
         console.log("System Health Monitoring Agent Started");
+
+        const credentials = await loadCredentials();
+
+        if(credentials){
+            console.log("Existing server credentials found");
+
+            await metricsLoop(credentials.serverId, metricsInterval, credentials.agentToken);
+
+            return;
+        }
+
+        
+        const token = process.env.ENROLLMENT_TOKEN;
+    
+        if(!token){
+            throw new Error("Enrollment_token is not configured");
+        }
 
         const hostname= getHostname();
 
@@ -99,19 +113,10 @@ async function startAgent(){
             "5.0.0"
         );
 
-        
-//         const serverId = await registerServer(
-//     hostname,
-//     ipAddress,
-//     os.platform(),
-//     "1.0.0"
-// );
+        ///// SAVING CREDENTIALS LOCALLY IN JASON FILE ///////
+        await saveCredentials({serverId, agentToken});
 
-        // await collectAndSendMetrics(serverId, agentToken);
-
-        // setInterval(async () => {
-        //     await collectAndSendMetrics(serverId);
-        // }, metricsInterval);
+        console.log("Agent enrolled successfully with server");
 
         await metricsLoop(serverId, metricsInterval, agentToken);
 

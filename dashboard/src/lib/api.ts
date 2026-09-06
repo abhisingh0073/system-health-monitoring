@@ -1,3 +1,5 @@
+import { cookies } from "next/dist/server/request/cookies";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3456/api";
 
@@ -5,6 +7,7 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
 
@@ -31,8 +34,8 @@ async function request<T>(
 }
 
 export const api = {
-  get: <T>(endpoint: string) =>
-    request<T>(endpoint),
+  get: <T>(endpoint: string, options: RequestInit = {}) =>
+    request<T>(endpoint, options),
 
   post: <T>(endpoint: string, body: unknown) =>
     request<T>(endpoint, {
