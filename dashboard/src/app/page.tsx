@@ -6,6 +6,7 @@ import type { Server } from "@/types/server";
 import { getAllServers } from "@/services/server.service";
 // import { LiveServerMetrics } from "@/components/LiveServerMetrics";
 import { LiveOverview } from "@/components/LiveOverview";
+import { Alert, getAlerts } from "@/services/alert.service";
 
 
 
@@ -20,9 +21,25 @@ async function getServers(): Promise<Server[]> {
   }
 }
 
-export default async function OverviewPage() {
-  const servers = await getServers();
+async function getDashboardAlerts(): Promise<Alert[]> {
+  try{
+    const response = await getAlerts();
+    return response.data;
 
+  } catch(error){
+    console.error("failed to fetch alerts:", error);
+    return [];
+  }
+}
+
+export default async function OverviewPage() {
+  // const servers = await getServers();
+  // const alerts = await getDashboardAlerts();
+
+  const [servers, alerts] = await Promise.all([
+    getServers(),
+    getDashboardAlerts(),
+  ])
   // const online = servers.filter((s) => s.status === "online").length;
   // const offline = servers.filter((s) => s.status === "offline").length;
   // const unknown = servers.filter((s) => s.status === "unknown").length;
@@ -36,7 +53,7 @@ export default async function OverviewPage() {
         </h2>
 
         {/* <LiveServerMetrics/> */}
-        <LiveOverview servers={servers} />
+        <LiveOverview servers={servers} initialAlerts={alerts} />
       </div>
     </div>
   );

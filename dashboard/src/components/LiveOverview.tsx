@@ -6,21 +6,25 @@ import { StatCard } from "@/components/StatCard";
 import { ServerTable } from "@/components/ServerTable";
 import { useSocketData } from "@/providers/SocketContext";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/services/alert.service";
 
 type Props = {
   servers: Server[];
+  initialAlerts: Alert[];
 };
 
-export function LiveOverview({ servers: initialServers }: Props) {
+export function LiveOverview({ servers: initialServers, initialAlerts }: Props) {
    const router = useRouter();
   const [servers, setServers] = useState<Server[]>(initialServers);
+  // const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
 
-  const { metricsByServer, offlineServers } = useSocketData();
+  const { metricsByServer, offlineServers, alerts } = useSocketData();
 
   useEffect(() => {setServers(initialServers);
   }, [initialServers]);
 
-  
+  //useEffect(() => {setAlerts(initialAlerts);
+  //}, [initialAlerts]);
 
   const liveServers: Server[] = servers.map((server): Server => {
   const metrics = metricsByServer[server.id];

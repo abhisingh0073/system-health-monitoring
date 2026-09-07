@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { emitMetricsUpdated } from '../socket/emitter';
+import { evaluateCpuAlert } from './alert.service';
 
 export async function postMetrics(serverId: string, cpuUsage: number, memoryUsage: number, diskUsage: number, uptimeSeconds: number, networkIn:number, networkOut: number): Promise<number> {
     try{
@@ -17,19 +18,25 @@ export async function postMetrics(serverId: string, cpuUsage: number, memoryUsag
                     networkOut
                   ]);
              
+            // updating server is live and last seen time
             await pool.query(
                 "UPDATE servers SET last_seen = NOW(), status = 'online' WHERE id = $1", [serverId]);
+            
+            // evaluatiing cpu alert based on the threshold if(cpuUsage >= 80) 
+            await evaluateCpuAlert(serverId, cpuUsage);
 
-                emitMetricsUpdated({
-                    serverId,
-                    cpuUsage,
-                    memoryUsage,
-                    diskUsage,
-                    uptimeSeconds,
-                    networkIn,
-                    networkOut,
-                    created_at: metricsResult.rows[0].created_at,
-                })
+
+            // Sending live data to the frontend via socket.io
+            emitMetricsUpdated({
+                serverId,
+                cpuUsage,
+                memoryUsage,
+                diskUsage,
+                uptimeSeconds,
+                networkIn,
+                networkOut,
+                created_at: metricsResult.rows[0].created_at,
+            })
 
         return metricsResult.rows[0].id;
         

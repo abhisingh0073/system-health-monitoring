@@ -9,6 +9,7 @@ import {
   SocketContext,
   type Metrics,
   type Services,
+  type Alert,
 } from "./SocketContext";
 import { ServerOfflineData } from "@/types/server";
 
@@ -23,6 +24,7 @@ const [metricsByServer, setMetricsByServer] = useState<Record<string, Metrics>>(
 const [servicesByServer, setServicesByServer] = useState<Record<string, Services>>({});
 const [offlineServers, setOfflineServers] = useState<Record<string, ServerOfflineData>>({});
 const [metricsHistoryByServer, setMetricsHistoryByServer] = useState<Record<string, Metrics[]>>({});
+const [alerts, setAlerts] = useState<Alert[]>([]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -83,25 +85,38 @@ const [metricsHistoryByServer, setMetricsHistoryByServer] = useState<Record<stri
     }
 
 
+/// Alert Created and Alert Resolved event handlers to update
+    const onAlertCreated = (data: Alert) => {
+      console.log("🚨 Alert Created", data);
+
+      setAlerts((prev) => {
+        return [...prev, data];
+      })
+    }
+
+
+    const onAlertResolved = (data: Alert) => {
+      console.log("✅ Alert Resolved", data);
+
+      setAlerts((prev) => {
+        return prev.filter((alert) => alert.id !== data.id);
+      })
+    }
+
+
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
-    socket.on(
-      SOCKET_EVENTS.METRICS_UPDATED,
-      onMetricsUpdated
-    );
+    socket.on( SOCKET_EVENTS.METRICS_UPDATED,  onMetricsUpdated);
 
-    socket.on(
-      SOCKET_EVENTS.SERVICES_UPDATED,
-      onServicesUpdated
-    );
+    socket.on( SOCKET_EVENTS.SERVICES_UPDATED,  onServicesUpdated);
 
-    socket.on(
-      SOCKET_EVENTS.SERVER_OFFLINE,
-      onServerOffline
-    );
+    socket.on( SOCKET_EVENTS.SERVER_OFFLINE,  onServerOffline);
 
+    socket.on( SOCKET_EVENTS.ALERT_CREATED,  onAlertCreated);
+
+    socket.on( SOCKET_EVENTS.ALERT_RESOLVED,  onAlertResolved);
 
     return () => {
       socket.off("connect", onConnect);
@@ -122,12 +137,22 @@ const [metricsHistoryByServer, setMetricsHistoryByServer] = useState<Record<stri
         onServerOffline
       );
 
+      socket.off(
+        SOCKET_EVENTS.ALERT_CREATED,
+        onAlertCreated
+      );
+
+      socket.off(
+        SOCKET_EVENTS.ALERT_RESOLVED,
+        onAlertResolved
+      );
+
       socket.disconnect();
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ metricsByServer, servicesByServer, offlineServers, metricsHistoryByServer }}>
+    <SocketContext.Provider value={{ metricsByServer, servicesByServer, offlineServers, metricsHistoryByServer, alerts }}>
       {children}
     </SocketContext.Provider>
   );

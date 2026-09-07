@@ -12,6 +12,7 @@ import servicesRouter from "./routes/services.route";
 import { initializeSocket } from "./socket/socket";
 import authRouter from "./routes/auth.route";
 import enrollmentRouter from "./routes/enrollmentRouter";
+import alertRouter from "./routes/alert.route";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/metrics", metricsRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/enrollment", enrollmentRouter);
+app.use("/api/alerts", alertRouter);
 
 
 

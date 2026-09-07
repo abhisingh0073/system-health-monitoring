@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Server } from "@/types/server";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatLastSeen } from "@/services/utils";
+import { formatLastSeen, RelativeTime } from "@/services/utils";
 import { MetricBadge } from "./MetricBadge";
 import { useSocketData } from "@/providers/SocketContext";
 import { useNow } from "@/hooks/useNow";

@@ -1,3 +1,52 @@
+// "use client";
+
+// import { useEffect, useState } from "react";
+
+// function formatLastSeen(lastSeen: string | null | undefined) {
+//   if (!lastSeen) return "Never";
+
+//   const diff = Math.floor(
+//     (Date.now() - new Date(lastSeen).getTime()) / 1000
+//   );
+
+//   if (diff < 60) {
+//     return `${diff} sec ago`;
+//   }
+
+//   const minutes = Math.floor(diff / 60);
+
+//   if (minutes < 60) {
+//     return `${minutes} min ago`;
+//   }
+
+//   const hours = Math.floor(minutes / 60);
+
+//   return `${hours} hr ago`;
+// }
+
+// export function RelativeTime({
+//   lastSeen,
+// }: {
+//   lastSeen: string | null | undefined;
+// }) {
+//   const [text, setText] = useState("...");
+
+//   useEffect(() => {
+//     const update = () => {
+//       setText(formatLastSeen(lastSeen));
+//     };
+
+//     update();
+
+//     const interval = setInterval(update, 1000);
+
+//     return () => clearInterval(interval);
+//   }, [lastSeen]);
+
+//   return text;
+// }
+
+
 export function formatLastSeen(date: string | null): string {
   if (!date) {
     return "Never";
@@ -84,3 +133,54 @@ export function formatUptime(seconds: number | string): string {
 
   return parts.join(" ");
 }
+
+
+
+
+// "use client";
+
+// import { useEffect, useState } from "react";
+
+// function formatLastSeen(lastSeen: string | null | undefined) {
+//   if (!lastSeen) return "Never";
+
+//   const diff = Math.floor(
+//     (Date.now() - new Date(lastSeen).getTime()) / 1000
+//   );
+
+//   if (diff < 60) {
+//     return `${diff} sec ago`;
+//   }
+
+//   const minutes = Math.floor(diff / 60);
+
+//   if (minutes < 60) {
+//     return `${minutes} min ago`;
+//   }
+
+//   const hours = Math.floor(minutes / 60);
+
+//   return `${hours} hr ago`;
+// }
+
+// export function RelativeTime({
+//   lastSeen,
+// }: {
+//   lastSeen: string | null | undefined;
+// }) {
+//   const [text, setText] = useState("...");
+
+//   useEffect(() => {
+//     const update = () => {
+//       setText(formatLastSeen(lastSeen));
+//     };
+
+//     update();
+
+//     const interval = setInterval(update, 1000);
+
+//     return () => clearInterval(interval);
+//   }, [lastSeen]);
+
+//   return <>{text}</>;
+// }

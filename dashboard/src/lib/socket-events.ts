@@ -7,8 +7,10 @@ export const SOCKET_EVENTS = {
 
   SERVER_OFFLINE: "serverOffline",
 
+  METRICS_HISTORY_UPDATED: "metricsHistoryUpdated",
+  
   ALERT_CREATED: "alertCreated",
 
-  METRICS_HISTORY_UPDATED: "metricsHistoryUpdated",
+  ALERT_RESOLVED: "alertResolved",
 
 } as const;

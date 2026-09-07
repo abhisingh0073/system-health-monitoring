@@ -39,6 +39,7 @@ export type SocketContextType = {
   servicesByServer: Record<string, Services>;
   offlineServers: Record<string, ServerOfflineData>;
   metricsHistoryByServer: Record<string, Metrics[]>;
+  alerts: Alert[];
 };
 
 export const SocketContext = createContext<SocketContextType>({
@@ -46,8 +47,20 @@ export const SocketContext = createContext<SocketContextType>({
   servicesByServer: {},
   offlineServers: {},
   metricsHistoryByServer: {},
+  alerts: [],
 });
 
 export function useSocketData() {
   return useContext(SocketContext);
 }
+
+export type Alert = {
+  id: number;
+  server_id: string;
+  alert_type: string;
+  severity: string;
+  message: string;
+  status: "active" | "resolved";
+  triggered_at: string;
+  resolved_at: string | null;
+};
