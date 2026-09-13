@@ -9,26 +9,52 @@ import {
   SocketContext,
   type Metrics,
   type Services,
-  type Alert,
 } from "./SocketContext";
 import { ServerOfflineData } from "@/types/server";
+import { getAlertsClient } from "@/services/alert.client.service";
+import { Alert } from "@/types/alert";
+import AlertToast from "@/components/Alert/AlertToast";
 
 
 
 export default function SocketProvider({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+   initialAlerts = [],
+  }: {
+    children: React.ReactNode;
+    initialAlerts?: Alert[];
+
+  }) {
+
 const [metricsByServer, setMetricsByServer] = useState<Record<string, Metrics>>({});
 const [servicesByServer, setServicesByServer] = useState<Record<string, Services>>({});
 const [offlineServers, setOfflineServers] = useState<Record<string, ServerOfflineData>>({});
 const [metricsHistoryByServer, setMetricsHistoryByServer] = useState<Record<string, Metrics[]>>({});
-const [alerts, setAlerts] = useState<Alert[]>([]);
+const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+const [toastAlerts, setToastAlerts] = useState<Alert[]>([]);
+
+
+//// helps to remove alertToast after 5 second
+    const removeToast = (alertId: number) => {
+      setToastAlerts((prev) => prev.filter((alert) => alert.id !== alertId))
+    }
+
 
   useEffect(() => {
-    const socket = getSocket();
 
+    async function loadInitialAlerts(){
+      try{
+        const response = await getAlertsClient();
+        setAlerts(response.data);
+
+      } catch (error) {
+        console.error("Error loading initial alerts:", error);
+      }
+    }
+
+    loadInitialAlerts();
+
+    const socket = getSocket();
     socket.connect();
 
     const onConnect = () => {
@@ -90,17 +116,38 @@ const [alerts, setAlerts] = useState<Alert[]>([]);
       console.log("🚨 Alert Created", data);
 
       setAlerts((prev) => {
-        return [...prev, data];
+        if(prev.some((alert) => alert.id === data.id)){
+          return prev;
+        }
+
+        return [data, ...prev];
       })
+
+      // set current Alert in notification
+      setToastAlerts((prev) => {
+        if(prev.some((alert) => alert.id === data.id)){
+          return prev;
+        }
+
+        return [data, ...prev]
+      });
+
+      setTimeout(() => {
+        removeToast(data.id);
+      }, 10000);
     }
+
+// //// helps to remove alertToast after 5 second
+//     const removeToast = (alertId: number) => {
+//       setToastAlerts((prev) => prev.filter((alert) => alert.id !== alertId))
+//     }
 
 
     const onAlertResolved = (data: Alert) => {
       console.log("✅ Alert Resolved", data);
 
-      setAlerts((prev) => {
-        return prev.filter((alert) => alert.id !== data.id);
-      })
+      setAlerts((prev) => 
+        prev.map((alert) => alert.id === data.id ? data : alert));
     }
 
 
@@ -153,7 +200,19 @@ const [alerts, setAlerts] = useState<Alert[]>([]);
 
   return (
     <SocketContext.Provider value={{ metricsByServer, servicesByServer, offlineServers, metricsHistoryByServer, alerts }}>
-      {children}
+      <>
+         {children}
+   
+         <div>
+           {toastAlerts.map((alert) => (
+             <AlertToast
+             key={alert.id}
+             alert={alert}
+             onClose={() => removeToast(alert.id)}
+             />
+           ))}
+           </div>
+      </>
     </SocketContext.Provider>
   );
 }

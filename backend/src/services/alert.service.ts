@@ -49,7 +49,7 @@ export async function evaluateCpuAlert(serverId: string, cpuUsage: number): Prom
 
         const alert = result.rows[0];
 
-        emitAlertResolved(alert);
+        emitAlertResolved(alert); // data sent to socket io
     }
 }
 
@@ -57,8 +57,9 @@ export async function evaluateCpuAlert(serverId: string, cpuUsage: number): Prom
 export async function getAlerts(userId: string) {
     const result = await pool.query(
         `SELECT a.id, 
-        a.server_id, 
-        a.alert_type
+        a.server_id,
+        s.hostname, 
+        a.alert_type,
         a.severity,
         a.message,
         a.status,

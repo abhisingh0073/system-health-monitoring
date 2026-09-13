@@ -4,30 +4,30 @@ import { useEffect, useState } from "react";
 import type { Server, ServerStatus } from "@/types/server";
 import { StatCard } from "@/components/StatCard";
 import { ServerTable } from "@/components/ServerTable";
+import { AlertLists } from "@/components/Alert/AlertLists";
 import { useSocketData } from "@/providers/SocketContext";
 import { useRouter } from "next/navigation";
-import { Alert } from "@/services/alert.service";
 
 type Props = {
   servers: Server[];
-  initialAlerts: Alert[];
 };
 
-export function LiveOverview({ servers: initialServers, initialAlerts }: Props) {
-   const router = useRouter();
+export function LiveOverview({ servers: initialServers}: Props) {
+  const router = useRouter();
   const [servers, setServers] = useState<Server[]>(initialServers);
-  // const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
-
+  
   const { metricsByServer, offlineServers, alerts } = useSocketData();
 
   useEffect(() => {setServers(initialServers);
   }, [initialServers]);
 
-  //useEffect(() => {setAlerts(initialAlerts);
-  //}, [initialAlerts]);
 
   const liveServers: Server[] = servers.map((server): Server => {
   const metrics = metricsByServer[server.id];
+
+  const activeAlerts = alerts.filter(
+    (alert) => alert.status === "active"
+  )
 
   if (offlineServers[server.id]) {
     return {
@@ -64,11 +64,15 @@ export function LiveOverview({ servers: initialServers, initialAlerts }: Props) 
     (server) => server.status === "unknown"
   ).length;
 
+  const activeAlerts = alerts.filter(
+    (alert) => alert.status === "active"
+  )
+
   return (
     <>
       {/* Stats */}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
           label="Total Servers"
           value={liveServers.length}
@@ -106,6 +110,15 @@ export function LiveOverview({ servers: initialServers, initialAlerts }: Props) 
               : undefined
           }
         />
+        <StatCard
+          label="Alerts"
+          value={activeAlerts.length}
+          accent={
+            activeAlerts.length > 0
+              ? "var(--red)"
+              : "var(--green)"
+          }
+        />
       </div>
 
       {/* Server Table */}
@@ -125,6 +138,13 @@ export function LiveOverview({ servers: initialServers, initialAlerts }: Props) 
         </div>
 
         <ServerTable servers={liveServers} />
+      </div>
+      <div className="mt-8">
+         <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
+           Active Alerts
+         </h2>
+       
+         <AlertLists alerts={activeAlerts} />
       </div>
     </>
   );

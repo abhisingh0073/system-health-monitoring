@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/types/alert";
 import { ServerOfflineData } from "@/types/server";
 import { ServiceStatus } from "@/types/service";
 import { createContext, useContext } from "react";
@@ -14,14 +15,6 @@ export type Metrics = {
   networkOut: number;
   created_at: string;
 };
-
-// export type Services = {
-//   serverId: string;
-//   services: {
-//     serviceName: string;
-//     status: string;
-//   }[];
-// };
 
 export type LiveService = {
   service: string;
@@ -54,13 +47,3 @@ export function useSocketData() {
   return useContext(SocketContext);
 }
 
-export type Alert = {
-  id: number;
-  server_id: string;
-  alert_type: string;
-  severity: string;
-  message: string;
-  status: "active" | "resolved";
-  triggered_at: string;
-  resolved_at: string | null;
-};

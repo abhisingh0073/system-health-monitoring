@@ -36,9 +36,9 @@ export default async function OverviewPage() {
   // const servers = await getServers();
   // const alerts = await getDashboardAlerts();
 
-  const [servers, alerts] = await Promise.all([
+  const [servers] = await Promise.all([
     getServers(),
-    getDashboardAlerts(),
+    // getDashboardAlerts(),
   ])
   // const online = servers.filter((s) => s.status === "online").length;
   // const offline = servers.filter((s) => s.status === "offline").length;
@@ -53,7 +53,7 @@ export default async function OverviewPage() {
         </h2>
 
         {/* <LiveServerMetrics/> */}
-        <LiveOverview servers={servers} initialAlerts={alerts} />
+        <LiveOverview servers={servers} />
       </div>
     </div>
   );
