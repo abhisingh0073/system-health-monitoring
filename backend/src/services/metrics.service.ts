@@ -1,6 +1,9 @@
 import { pool } from '../db';
 import { emitMetricsUpdated } from '../socket/emitter';
-import { evaluateCpuAlert } from './alert.service';
+import { evaluateCpuAlert } from './alerts/cpu.alert';
+import { evaluateDiskAlert } from './alerts/disk.alert';
+import { evaluateMemoryAlert } from './alerts/memory.alert';
+// import { evaluateCpuAlert } from './alert.service';
 
 export async function postMetrics(serverId: string, cpuUsage: number, memoryUsage: number, diskUsage: number, uptimeSeconds: number, networkIn:number, networkOut: number): Promise<number> {
     try{
@@ -19,13 +22,15 @@ export async function postMetrics(serverId: string, cpuUsage: number, memoryUsag
                   ]);
              
             // updating server is live and last seen time
-            await pool.query(
-                "UPDATE servers SET last_seen = NOW(), status = 'online' WHERE id = $1", [serverId]);
+            const serverResponse = await pool.query(
+                "UPDATE servers SET last_seen = NOW(), status = 'online' WHERE id = $1 RETURNING user_id", [serverId]);
+
+
+            const userId = serverResponse.rows[0].user_id;
             
-            // evaluatiing cpu alert based on the threshold if(cpuUsage >= 80) 
-            await evaluateCpuAlert(serverId, cpuUsage);
-
-
+            
+            
+            
             // Sending live data to the frontend via socket.io
             emitMetricsUpdated({
                 serverId,
@@ -36,7 +41,12 @@ export async function postMetrics(serverId: string, cpuUsage: number, memoryUsag
                 networkIn,
                 networkOut,
                 created_at: metricsResult.rows[0].created_at,
-            })
+            }, userId);
+            
+            // evaluating alert based on the threshold if(cpuUsage >= 80) 
+            await evaluateCpuAlert(serverId, cpuUsage);
+            await evaluateMemoryAlert(serverId, memoryUsage);
+            await evaluateDiskAlert(serverId, diskUsage);
 
         return metricsResult.rows[0].id;
         

@@ -45,6 +45,7 @@ const [toastAlerts, setToastAlerts] = useState<Alert[]>([]);
     async function loadInitialAlerts(){
       try{
         const response = await getAlertsClient();
+        console.log("Initial alerts from api:", response);
         setAlerts(response.data);
 
       } catch (error) {
@@ -148,6 +149,18 @@ const [toastAlerts, setToastAlerts] = useState<Alert[]>([]);
 
       setAlerts((prev) => 
         prev.map((alert) => alert.id === data.id ? data : alert));
+
+      setToastAlerts((prev) => {
+        if(prev.some((alert) => alert.id === data.id)){
+          return prev;
+        }
+
+        return [data, ...prev];
+      });
+
+      setTimeout(() => {
+        removeToast(data.id);
+      }, 1000);
     }
 
 

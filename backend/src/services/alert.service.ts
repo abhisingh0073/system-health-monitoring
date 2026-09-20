@@ -1,57 +1,69 @@
 import { pool } from "../db";
-import { emitAlertCreated, emitAlertResolved } from "../socket/emitter";
+// import { emitAlertCreated, emitAlertResolved } from "../socket/emitter";
 
 
 
-const CPU_THRESHOLD = 80;
+// const CPU_THRESHOLD = 80;
 
-export async function evaluateCpuAlert(serverId: string, cpuUsage: number): Promise<void>{
+// export async function evaluateCpuAlert(serverId: string, cpuUsage: number): Promise<void>{
+
+//     const serverResult = await pool.query(
+//         `SELECT user_id FROM servers WHERE id=$1`, [serverId]
+//     );
+
+//     const userId = serverResult.rows[0]?.user_id;
+
     
-    const activeAlertResult = await pool.query(
-        `SELECT id 
-        FROM alerts WHERE server_id = $1 AND alert_type = 'HIGH_CPU'
-        AND status = 'active'
-        LIMIT 1`, [serverId]
-    );
+//     if (!userId) {
+//         throw new Error(`User not found for server ${serverId}`);
+//     }
+
+    
+//     const activeAlertResult = await pool.query(
+//         `SELECT id 
+//         FROM alerts WHERE server_id = $1 AND alert_type = 'HIGH_CPU'
+//         AND status = 'active'
+//         LIMIT 1`, [serverId]
+//     );
 
 
-    const activeAlert = activeAlertResult.rows[0];
+//     const activeAlert = activeAlertResult.rows[0];
 
-    if(cpuUsage >= CPU_THRESHOLD){
+//     if(cpuUsage >= CPU_THRESHOLD){
         
-        if(activeAlert){
-            return;
-        }
+//         if(activeAlert){
+//             return;
+//         }
 
-        const result = await pool.query(
-            `INSERT INTO alerts 
-            (server_id, alert_type, severity, message, status)
-            VALUES ($1, $2, $3, $4, 'active') RETURNING *`,
-            [serverId, "HIGH_CPU", "warning", `CPU usage is ${cpuUsage.toFixed(2)}%`]
-        );
+//         const result = await pool.query(
+//             `INSERT INTO alerts 
+//             (server_id, alert_type, severity, message, status)
+//             VALUES ($1, $2, $3, $4, 'active') RETURNING *`,
+//             [serverId, "HIGH_CPU", "warning", `CPU usage is ${cpuUsage.toFixed(2)}%`]
+//         );
 
-        const alert = result.rows[0];
+//         const alert = result.rows[0];
 
-        emitAlertCreated(alert);
+//         emitAlertCreated(alert, userId);
 
-        return;
-    }
+//         return;
+//     }
 
 
-    if(activeAlert){
+//     if(activeAlert){
 
-        const result = await pool.query(
-            `UPDATE alerts
-            SET status = 'resolved', resolved_at = NOW()
-            WHERE id = $1
-            RETURNING *`, [activeAlert.id]
-        );
+//         const result = await pool.query(
+//             `UPDATE alerts
+//             SET status = 'resolved', resolved_at = NOW()
+//             WHERE id = $1
+//             RETURNING *`, [activeAlert.id]
+//         );
 
-        const alert = result.rows[0];
+//         const alert = result.rows[0];
 
-        emitAlertResolved(alert); // data sent to socket io
-    }
-}
+//         emitAlertResolved(alert, userId); // data sent to socket io for resolved alert
+//     }
+// }
 
 
 export async function getAlerts(userId: string) {

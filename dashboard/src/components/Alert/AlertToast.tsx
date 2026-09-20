@@ -65,9 +65,16 @@ export default function AlertToast({
   alert,
   onClose,
 }: AlertToastProps) {
+
+  const isActive = alert.status === "active";
+
+  const borderClass = isActive ? "border-[var(--red)]" : "text-[var(--green)]";
+
+  const statusClass = isActive ? "border-[var(--red)]" : "text-[var(--green)]";
+
   return (
     /* Added positioning classes: fixed top-4 right-4 z-50 */
-    <div className="fixed top-4 right-4 z-50 w-96 border border-[var(--border)] rounded-lg bg-[var(--background)] shadow-lg p-4 animate-in fade-in slide-in-from-top-4 duration-300">
+    <div  className={`fixed top-4 right-4 z-50 w-96 border ${borderClass} rounded-lg bg-[var(--background)] shadow-lg p-4 animate-in fade-in slide-in-from-top-4 duration-300`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold">
@@ -92,8 +99,8 @@ export default function AlertToast({
       </div>
 
       <div className="flex items-center justify-between mt-3">
-        <span className="text-xs uppercase font-medium text-[var(--yellow)]">
-          {alert.severity}
+        <span className={`text-xs uppercase font-medium ${statusClass}`}>
+          {alert.status}
         </span>
 
         <span className="text-xs text-[var(--text-secondary)]">

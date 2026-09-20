@@ -8,6 +8,7 @@ import { getServerIdByAgentToken } from "../services/agent-token.service";
 export interface AgentAuthenticatedRequest extends Request {
     agent?: {
         serverId: string;
+        userId: string;
     };
 }
 
@@ -34,7 +35,14 @@ export async function agentMiddleware( req: AgentAuthenticatedRequest, res: Resp
     }
 
     try{
-        const serverId = await getServerIdByAgentToken(token);
+        // const serverId = await getServerIdByAgentToken(token);
+        const result = await getServerIdByAgentToken(token);
+
+        if(!result){
+            throw new Error("Invalid agent token or server not found")
+        }
+
+       const {id: serverId, user_id: userId} = result;
     
         if (!serverId) {
             res.status(401).json({
@@ -44,7 +52,7 @@ export async function agentMiddleware( req: AgentAuthenticatedRequest, res: Resp
             return;
         }
     
-        req.agent = {serverId};
+        req.agent = {serverId, userId};
     
         next();
 

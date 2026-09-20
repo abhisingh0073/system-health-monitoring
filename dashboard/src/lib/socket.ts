@@ -9,6 +9,7 @@ export function getSocket(): Socket{
             {
                 transports: ["websocket"],
                 autoConnect: false,
+                withCredentials: true,
             }
         );
     }

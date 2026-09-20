@@ -23,11 +23,14 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
       );
     }
 
+    const serverResponse = await pool.query(`SELECT user_id FROM servers WHERE id = $1`, [serverId]);
+    const userId = serverResponse.rows[0].user_id;
+
       //websocket
       emitServicesUpdated({
         serverId,
         services,
-      });
+      }, userId);
       
   } catch (error) {
     console.error("Failed to save services:", error);

@@ -18,28 +18,28 @@ export function LiveOverview({ servers: initialServers}: Props) {
   
   const { metricsByServer, offlineServers, alerts } = useSocketData();
 
-  useEffect(() => {setServers(initialServers);
+  console.log("alerts from liveoverview", alerts);
+
+  useEffect(() => {
+    setServers(initialServers);
+
   }, [initialServers]);
 
 
   const liveServers: Server[] = servers.map((server): Server => {
-  const metrics = metricsByServer[server.id];
-
-  const activeAlerts = alerts.filter(
-    (alert) => alert.status === "active"
-  )
-
-  if (offlineServers[server.id]) {
-    return {
-      ...server,
-      status: "offline" as ServerStatus,
-      last_seen: offlineServers[server.id].lastSeen,
-    };
-  }
-
-  if (!metrics) {
-    return server;
-  }
+    const metrics = metricsByServer[server.id];
+  
+    if (offlineServers[server.id]) {
+      return {
+        ...server,
+        status: "offline" as ServerStatus,
+        last_seen: offlineServers[server.id].lastSeen,
+      };
+    }
+  
+    if (!metrics) {
+      return server;
+    }
 
   return {
     ...server,
@@ -66,7 +66,8 @@ export function LiveOverview({ servers: initialServers}: Props) {
 
   const activeAlerts = alerts.filter(
     (alert) => alert.status === "active"
-  )
+  );
+
 
   return (
     <>

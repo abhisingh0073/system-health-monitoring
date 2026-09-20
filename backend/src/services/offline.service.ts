@@ -19,7 +19,8 @@ export async function offlineCheck() {
                 serverId: server.id,
                 hostname: server.hostname,
                 lastSeen: server.last_seen,
-            });
+                
+            }, server.user_id);
         }
 
         return result.rowCount ?? 0;
