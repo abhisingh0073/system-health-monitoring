@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft} from "lucide-react";
 import { getServerById, getServerMetrics, getServerServices } from "@/services/server.service";
-import type { Metrics } from "@/types";
+import type { AggregatedMetric } from "@/types/metrics";
 import type { Server } from "@/types/server";
 import type { Service } from "@/types/service";
 import { notFound } from "next/navigation";
@@ -11,12 +11,12 @@ import LiveServerDetail from "@/components/LiveServerDetail";
 
 async function getData(
   id: string
-): Promise<{ server: Server; metrics: Metrics[]; services: Service[] } | null> {
+): Promise<{ server: Server; metrics: AggregatedMetric[]; services: Service[] } | null> {
   try {
     const [serverResponse, metricsResponse, servicesResponse] = await Promise.all([
       getServerById(id),
-      getServerMetrics(id),
-      getServerServices(id).catch(() => ({ data: [] as Service[] })), // graceful — services endpoint may not exist yet
+      getServerMetrics(id, "24h"),
+      getServerServices(id).catch(() => ({ data: [] as Service[] })), 
     ]);
 
     return {
@@ -30,11 +30,10 @@ async function getData(
   }
 }
 
-export default async function ServerDetailPage({
-  params,
-}: {
+export default async function ServerDetailPage({params,}: {
   params: Promise<{ id: string }>;
 }) {
+
   const { id } = await params;
   const data = await getData(id);
 

@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowDownLeft, ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft,  ArrowUpRight } from "lucide-react";
 import { ServerCard } from "@/components/ServerCard";
 import { MetricsCharts } from "@/components/MetricsCharts";
 import { ServicesCard } from "@/components/ServicesCard";
-import type { Metrics } from "@/types";
+import type { AggregatedMetric,} from "@/types/metrics";
 import type { Server } from "@/types/server";
 import type { Service } from "@/types/service";
 import { formatBytes, formatLastSeen, formatUptime } from "@/services/utils";
@@ -15,7 +14,7 @@ import { useMemo } from "react";
 
 interface LiveServerDetailProps {
   server: Server;
-  metrics: Metrics[];
+  metrics: AggregatedMetric[];
   services: Service[];
 }
 
@@ -25,25 +24,11 @@ export default function LiveServerDetail({
   services,
 }: LiveServerDetailProps) {
 
- const {metricsByServer, servicesByServer, offlineServers, metricsHistoryByServer} = useSocketData();
+ const {metricsByServer, servicesByServer, offlineServers} = useSocketData();
 
  const liveMetrics = metricsByServer[server.id];
  const liveServices = servicesByServer[server.id];
  const isOffline = Boolean(offlineServers[server.id]);
-//  const liveHistory = metricsHistoryByServer[server.id] ?? [];
-const liveHistory: Metrics[] = (
-  metricsHistoryByServer[server.id] ?? []
-).map((m) => ({
-  id: String((m as any).id ?? 0),
-  server_id: server.id,
-  cpu_usage: m.cpuUsage,
-  memory_usage: m.memoryUsage,
-  disk_usage: m.diskUsage,
-  uptime_seconds: m.uptimeSeconds,
-  network_in: m.networkIn,
-  network_out: m.networkOut,
-  created_at: m.created_at,
-}));
 
 const currentServices: Service[] = liveServices
   ? liveServices.services.map((item, index) => ({
@@ -75,66 +60,30 @@ const currentServices: Service[] = liveServices
     isOffline,
   ]);
 
-  /*
-   * Use live metric if available.
-   * Otherwise use the latest metric from the initial API request.
-   */
-  const latestMetric = useMemo(() => {
-    if (liveMetrics) {
-      return {
-        cpu_usage: liveMetrics.cpuUsage,
-        memory_usage: liveMetrics.memoryUsage,
-        disk_usage: liveMetrics.diskUsage,
-        uptime_seconds: liveMetrics.uptimeSeconds,
-        network_in: liveMetrics.networkIn,
-        network_out: liveMetrics.networkOut,
-        created_at: liveMetrics.created_at,
-      };
+
+
+const latestHistoricalMetric = metrics.at(-1);
+
+const latestMetric = liveMetrics
+  ? {
+      cpu_usage: Number(liveMetrics.cpuUsage),
+      memory_usage: Number(liveMetrics.memoryUsage),
+      disk_usage: Number(liveMetrics.diskUsage),
+      uptime_seconds: Number(liveMetrics.uptimeSeconds),
+      network_in: Number(liveMetrics.networkIn),
+      network_out: Number(liveMetrics.networkOut),
+      created_at: liveMetrics.created_at,
     }
-
-    return metrics[0] || null;
-  }, [
-    liveMetrics,
-    metrics,
-  ]);
-
-
-
-// const combinedMetrics = useMemo(() => {
-//   const all = [...metrics, ...liveHistory];
-
-//   const unique = new Map(
-//     all.map((metric) => [
-//       metric.created_at,
-//       metric,
-//     ])
-//   );
-
-//   return Array.from(unique.values())
-//     .sort(
-//       (a, b) =>
-//         new Date(a.created_at).getTime() -
-//         new Date(b.created_at).getTime()
-//     )
-//     .slice(-100);
-// }, [metrics, liveHistory]);
-
-  const combinedMetrics = useMemo(() => {
-  const all = [...metrics, ...liveHistory];
-
-  const unique = new Map(
-    all.map((metric) => [
-      metric.created_at,
-      metric,
-    ])
-  );
-
-  return Array.from(unique.values()).sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() -
-      new Date(b.created_at).getTime()
-  );
-}, [metrics, liveHistory]);
+  : latestHistoricalMetric
+    ? {
+        cpu_usage: Number(latestHistoricalMetric.cpu_usage),
+        memory_usage: Number(latestHistoricalMetric.memory_usage),
+        disk_usage: Number(latestHistoricalMetric.disk_usage),
+        network_in: Number(latestHistoricalMetric.network_in),
+        network_out: Number(latestHistoricalMetric.network_out),
+        created_at: latestHistoricalMetric.timestamp,
+      }
+    : null;
 
 
 
@@ -142,12 +91,11 @@ const currentServices: Service[] = liveServices
   return (
     <div className="space-y-6">
 
-      {/* Hero: server info + current metrics */}
+     
       <ServerCard server={liveServer} latestMetric={latestMetric} />
 
-      {/* Two-column: metrics snapshot | services */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: current metric bars (already in ServerCard on mobile, shown here on desktop as a standalone snapshot) */}
         <ServicesCard services={currentServices} />
 
         {/* Right: services */}
@@ -165,7 +113,7 @@ const currentServices: Service[] = liveServices
                   ["CPU", latestMetric.cpu_usage],
                   ["Memory", latestMetric.memory_usage],
                   ["Disk", latestMetric.disk_usage],
-                  ["Uptime", formatUptime(latestMetric.uptime_seconds)],
+                  // ["Uptime", formatUptime(latestMetric.uptime_seconds)],
                 //   ["NetworkIn", formatBytes(latestMetric.network_in)],
                 //   ["NetworkOut", formatBytes(latestMetric.network_out)]
                 ].map(([label, value]) => (
@@ -209,16 +157,19 @@ const currentServices: Service[] = liveServices
 
       {/* Historical charts */}
       <div>
-        <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
+        {/* <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
           Metric History
           {combinedMetrics.length > 0 && (
             <span className="ml-2 text-[var(--text-muted)]">
               ({combinedMetrics.length} data point{combinedMetrics.length !== 1 ? "s" : ""})
             </span>
           )}
-        </h2>
-        {/* <MetricsCharts metrics={metrics} /> */}
-        <MetricsCharts metrics={combinedMetrics} />
+        </h2> */}
+        <MetricsCharts
+            serverId = {server.id} 
+            metrics={metrics}       
+        />
+        {/* <MetricsCharts metrics={combinedMetrics} /> */}
       </div>
 
     </div>

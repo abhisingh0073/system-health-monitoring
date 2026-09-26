@@ -1,12 +1,13 @@
 import { pool } from "../db";
 import { emitServicesUpdated } from "../socket/emitter";
+import { evaluateServiceAlert } from "./alerts/service.alert";
 
 interface ServicesStatus{
     service: string,
     status: string
 }
 
-export async function postServices(serverId: string,services: ServicesStatus[]): Promise<void> {
+export async function postServices(serverId: string, userId: string, services: ServicesStatus[]): Promise<void> {
   try {
     for (const service of services) {
       await pool.query(
@@ -21,10 +22,13 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
         `,
         [ serverId, service.service, service.status,]
       );
+
+
+      await evaluateServiceAlert(serverId, userId, service.service, service.status);
     }
 
     const serverResponse = await pool.query(`SELECT user_id FROM servers WHERE id = $1`, [serverId]);
-    const userId = serverResponse.rows[0].user_id;
+    // const userId = serverResponse.rows[0].user_id;
 
       //websocket
       emitServicesUpdated({
@@ -42,12 +46,16 @@ export async function postServices(serverId: string,services: ServicesStatus[]):
 
 export async function getServerServices(serverId: string, userId: string) {
   const result = await pool.query(
-  `SELECT sv.*
+  `SELECT sv.id,
+       sv.service_name,
+       sv.status,
+       sv.last_checked
     FROM services sv
     INNER JOIN servers s
         ON s.id = sv.server_id
     WHERE sv.server_id = $1
     AND s.user_id = $2
+    ORDER BY sv.service_name
     `,
     [serverId, userId]
   );

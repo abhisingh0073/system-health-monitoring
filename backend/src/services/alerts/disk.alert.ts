@@ -1,3 +1,4 @@
+import { ALERT_CONFIG } from "./alert.config";
 import {
   getServerUserId,
   getActiveAlert,
@@ -9,17 +10,17 @@ import {
 const DISK_THRESHOLD = 85;
 
 export async function evaluateDiskAlert(
+  userId: string,
   serverId: string,
   diskUsage: number
 ) {
-  const userId = await getServerUserId(serverId);
+  
+  const alertType = "HIGH_DISK";
+  const config = ALERT_CONFIG.HIGH_DISK;
 
-  const activeAlert = await getActiveAlert(
-    serverId,
-    "HIGH_DISK"
-  );
+  const activeAlert = await getActiveAlert( serverId,  alertType);
 
-  if (diskUsage >= DISK_THRESHOLD) {
+  if (diskUsage >= config.threshold) {
 
     if (activeAlert) {
       return;
@@ -28,8 +29,8 @@ export async function evaluateDiskAlert(
     await createAlert({
       serverId,
       userId,
-      alertType: "HIGH_DISK",
-      severity: "warning",
+      alertType: alertType,
+      severity: config.severity,
       message: `Disk usage is ${diskUsage.toFixed(2)}%`,
     });
 

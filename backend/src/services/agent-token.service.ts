@@ -26,14 +26,11 @@ export async function getServerIdByAgentToken( agentToken: string): Promise<Serv
         return undefined;
     }
 
-    // return result.rows[0].id;
-
     return result.rows[0];
 }
  
 
 export async function removeAgentToken( serverId: string): Promise<void> {
-    
     await pool.query(`UPDATE servers SET agent_token_hash = NULL WHERE id = $1`, [serverId]);
 }
 

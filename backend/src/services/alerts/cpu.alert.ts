@@ -1,18 +1,20 @@
 import { pool } from "../../db";
-import { createAlert, getActiveAlert, getServerUserId, resolveAlert } from "./alert.helper";
+import { ALERT_CONFIG } from "./alert.config";
+import { createAlert, getActiveAlert, resolveAlert } from "./alert.helper";
 
-const CPU_THRESHOLD = 0;
 
 export async function evaluateCpuAlert(
+    userId: string,
     serverId: string,
     cpuUsage: number,
 ) {
     
-    const userId = await getServerUserId(serverId);
+   const alertType = "HIGH_CPU";
+   const config = ALERT_CONFIG.HIGH_CPU;
 
-    const activeAlert = await getActiveAlert(serverId, "HIGH_CPU");
+    const activeAlert = await getActiveAlert(serverId, alertType);
 
-    if(cpuUsage >= CPU_THRESHOLD){
+    if(cpuUsage >= config.threshold){
         
         if(activeAlert){
             return;
@@ -21,8 +23,8 @@ export async function evaluateCpuAlert(
         await createAlert({
             serverId,
             userId,
-            alertType: "HIGH_CPU",
-            severity: "warning",
+            alertType: alertType,
+            severity: config.severity,
             message: `CPU usage is ${cpuUsage.toFixed(2)}%`
         });
 

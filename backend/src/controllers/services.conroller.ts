@@ -6,11 +6,11 @@ import { AgentAuthenticatedRequest } from "../middleware/agent.middleware";
 
 export async function postServicesController(req:AgentAuthenticatedRequest, res:Response): Promise<void> {
 
-    const serverId = req.agent!.serverId;
+    const {serverId, userId}= req.agent!;
     const {services} = req.body;
 
     try{
-        await postServices(serverId, services);
+        await postServices(serverId, userId, services);
 
         res.status(200).json({
             success: true,

@@ -1,15 +1,17 @@
+import { ALERT_CONFIG } from "./alert.config";
 import { createAlert, getActiveAlert, getServerUserId, resolveAlert } from "./alert.helper";
 
 
-const MEMORY_THRESHOLD = 0;
+const MEMORY_THRESHOLD = 80;
 
-export async function evaluateMemoryAlert(serverId:string, memeoryUsage: number) {
+export async function evaluateMemoryAlert(userId: string, serverId:string, memeoryUsage: number) {
     
-    const userId = await getServerUserId(serverId);
+    const alertType = "HIGH_MEMORY";
+    const config = ALERT_CONFIG.HIGH_MEMORY;
 
-    const activeAlert = await getActiveAlert(serverId, "HIGH_MEMORY");
+    const activeAlert = await getActiveAlert(serverId, alertType);
 
-    if(memeoryUsage >= MEMORY_THRESHOLD){
+    if(memeoryUsage >= config.threshold){
         
         if(activeAlert){
             return;
@@ -18,8 +20,8 @@ export async function evaluateMemoryAlert(serverId:string, memeoryUsage: number)
         await createAlert({
             serverId,
             userId,
-            alertType: "HIGH_MEMORY",
-            severity: "warning",
+            alertType,
+            severity: config.severity,
             message: `Memory usage is ${memeoryUsage.toFixed(2)}%`
         })
     }

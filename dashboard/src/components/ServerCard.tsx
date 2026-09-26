@@ -1,14 +1,15 @@
 import type { Server } from "@/types/server";
-import type {  Metric } from "@/types";
+// import type {  Metric } from "@/types/metrics";
 import { StatusBadge } from "@/components/StatusBadge";
 import { MetricBar } from "@/components/MetricBar";
 // import { serverService } from "@/services/server.service";
 import { Monitor, Clock, Globe, Cpu } from "lucide-react";
 import { formatLastSeen, formatUptime } from "@/services/utils";
+import { LatestMetric, Metrics } from "@/types/metrics";
 
 interface ServerCardProps {
   server: Server;
-  latestMetric?: Metric;
+  latestMetric?: LatestMetric | null;
 }
 
 function InfoRow({ icon: Icon, label, value }: { icon: typeof Monitor; label: string; value: string }) {
@@ -54,7 +55,11 @@ export function ServerCard({ server, latestMetric }: ServerCardProps) {
             <InfoRow
               icon={Cpu}
               label="Uptime"
-              value={formatUptime(latestMetric.uptime_seconds)}
+               value={
+                  latestMetric.uptime_seconds !== undefined
+                    ? formatUptime(latestMetric.uptime_seconds)
+                    : "—"
+                }
             />
           )}
         </div>

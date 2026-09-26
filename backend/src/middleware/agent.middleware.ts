@@ -1,8 +1,4 @@
-
-
-
 import { Request, Response, NextFunction } from "express";
-
 import { getServerIdByAgentToken } from "../services/agent-token.service";
 
 export interface AgentAuthenticatedRequest extends Request {
@@ -35,7 +31,6 @@ export async function agentMiddleware( req: AgentAuthenticatedRequest, res: Resp
     }
 
     try{
-        // const serverId = await getServerIdByAgentToken(token);
         const result = await getServerIdByAgentToken(token);
 
         if(!result){

@@ -1,5 +1,6 @@
 import { pool } from "../db";
 import { emitServerOffline } from "../socket/emitter";
+import { evaluateOfflineServerAlert } from "./alerts/server-offline.alert";
 
 const OFFLINE_THRESHOLD_SECONDS = Number(process.env.OFFLINE_THRESHOLD_SECONDS || "30");
 
@@ -10,7 +11,7 @@ export async function offlineCheck() {
                         `UPDATE servers SET status = 'offline'
                         WHERE last_seen < NOW() - INTERVAL '${OFFLINE_THRESHOLD_SECONDS} seconds'
                         AND status = 'online' 
-                        RETURNING id, hostname, last_seen
+                        RETURNING id, user_id, hostname, last_seen
                         `
                     );
         
@@ -21,6 +22,13 @@ export async function offlineCheck() {
                 lastSeen: server.last_seen,
                 
             }, server.user_id);
+
+            /// creating alert if server if offline
+            evaluateOfflineServerAlert(
+                server.id,
+                server.user_id,
+                true
+            )
         }
 
         return result.rowCount ?? 0;

@@ -55,8 +55,24 @@ export async function getAllServers(userId: string) {
 
 
 export async function getServerById(serverId: string, userId: string){
+    // const result = await pool.query(
+    //     `SELECT * FROM servers WHERE id = $1 AND user_id = $2`, [serverId, userId]
+    // )
+
     const result = await pool.query(
-        `SELECT * FROM servers WHERE id = $1 AND user_id = $2`, [serverId, userId]
+      `SELECT
+       id,
+       hostname,
+       ip_address,
+       os_name,
+       agent_version,
+       status,
+       last_seen,
+       created_at,
+       updated_at
+       FROM servers WHERE id = $1
+         AND user_id = $2
+      `, [serverId, userId]
     )
 
     return result.rows[0] ?? null;
@@ -64,16 +80,16 @@ export async function getServerById(serverId: string, userId: string){
 
 
 
-export async function getServerMetrics(serverId: string, userId: string){
+export async function getServerMetrics(serverId: string, userId: string, limit: string){
     const result = await pool.query(
           `SELECT m.* FROM metrics m
            INNER JOIN servers s
                ON s.id = m.server_id
            WHERE m.server_id = $1 AND s.user_id = $2
            ORDER BY m.created_at DESC
-           LIMIT 100
+           LIMIT $3
            `,
-           [serverId, userId]
+           [serverId, userId, limit]
        );
 
     return result.rows.map(row => ({
@@ -82,4 +98,50 @@ export async function getServerMetrics(serverId: string, userId: string){
         memory_usage: Number(row.memory_usage),
         disk_usage: Number(row.disk_usage)
     }));
+}
+
+
+
+export async function deleteServer(serverId: string, userId: string): Promise<boolean> {
+  try{
+    const result = await pool.query(
+      `DELETE FROM servers WHERE id = $1
+       AND user_id = $2
+       RETURNING id
+      `, [serverId, userId]
+    );
+
+    return result.rowCount === 1;
+
+  } catch(error){
+    console.log("Error deleting server:", error);
+    throw new Error("Failed to delete server");
+  }
+}
+
+
+
+export async function getServerAlerts(serverId: string, userId: string){
+
+  const result = await pool.query(
+    `SELECT
+      a.id,
+      a.server_id,
+      a.alert_type,
+      a.service_name,
+      a.severity,
+      a.message,
+      a.status,
+      a.triggered_at,
+      a.resolved_at
+    FROM alerts a
+    JOIN servers s
+     ON S.id = a.server_id
+    WHERE a.server_id = $1
+     AND s.user_id = $2
+     ORDER BY a.triggered_at DESC
+    `, [serverId, userId]
+  );
+
+  return result.rows;
 }

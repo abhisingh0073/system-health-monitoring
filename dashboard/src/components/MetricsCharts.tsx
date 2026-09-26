@@ -9,10 +9,15 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import type { Metrics } from "@/types";
+import type { AggregatedMetric, MetricsRange } from "@/types/metrics";
+import { useEffect, useState } from "react";
+import { getServerMetrics } from "@/services/metrics.client.service";
+import { formateDateTime } from "@/services/utils";
+import { timeStamp } from "console";
 
 interface MetricsChartsProps {
-  metrics: Metrics[];
+  serverId: string;
+  metrics: AggregatedMetric[];
 }
 
 function formatTime(dateStr: string): string {
@@ -26,8 +31,12 @@ function getColor(value: number): string {
   return "var(--green)";
 }
 
+
+
+type MetricKey = | "cpu_usage" | "memory_usage" | "disk_usage";
+
 interface ChartConfig {
-  key: keyof Metrics;
+  key: MetricKey;
   label: string;
   color: string;
 }
@@ -38,13 +47,19 @@ const charts: ChartConfig[] = [
   { key: "disk_usage", label: "Disk Usage", color: "var(--yellow)" },
 ];
 
+
+
+
+
+
+
 function SingleChart({
   data,
   dataKey,
   label,
   color,
 }: {
-  data: Array<{ time: string; value: number }>;
+  data: Array<{ time: string; timeStamp: string; value: number }>;
   dataKey: string;
   label: string;
   color: string;
@@ -97,6 +112,7 @@ function SingleChart({
             tickFormatter={(v) => `${v}%`}
           />
           <Tooltip
+
             contentStyle={{
               background: "var(--surface-2)",
               border: "1px solid var(--border)",
@@ -105,7 +121,14 @@ function SingleChart({
               fontSize: "12px",
             }}
             formatter={(value) => [`${Number(value).toFixed(1)}%`, label]}
-            labelStyle={{ color: "var(--text-secondary)" }}
+
+            labelFormatter={(_, payload) => {
+              const timestamp = payload?.[0]?.payload?.timestamp;
+              if (!timestamp) return "";
+              return formateDateTime(timestamp);
+            }}
+
+           
           />
           <Area
             type="monotone"
@@ -122,7 +145,56 @@ function SingleChart({
   );
 }
 
-export function MetricsCharts({ metrics }: MetricsChartsProps) {
+
+
+
+
+
+
+export function MetricsCharts({ serverId, metrics }: MetricsChartsProps) {
+
+  const [range, setRange] = useState<MetricsRange>("24h");
+  const [chartMetrics, setChartMetrics] = useState(metrics);
+  const [loading, setLoading] = useState(false);
+
+
+  const ranges: {
+  value: MetricsRange;
+  label: string;
+}[] = [
+   { value: "1h", label: "1h" },
+   { value: "6h", label: "6h" },
+   { value: "24h", label: "24h" },
+   { value: "7d", label: "7d" },
+   { value: "30d", label: "30d" },
+];
+
+useEffect(() => {
+
+  if(range === "24h"){
+    setChartMetrics(metrics);
+    return;
+  }
+
+  async function loadMetrics(){
+    try{
+      setLoading(true);
+  
+      const response = await getServerMetrics(serverId, range);
+  
+      setChartMetrics(response.data);
+    } catch(error){
+      console.error("Failed to load metrics:", error);
+  
+    } finally{
+      setLoading(false);
+    }
+  }
+
+  loadMetrics();
+}, [range, serverId, metrics])
+
+
 
   if (!metrics || metrics.length === 0) {
     return (
@@ -143,24 +215,49 @@ export function MetricsCharts({ metrics }: MetricsChartsProps) {
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {charts.map(({ key, label, color }) => {
-        const data = [...metrics]
-          .map((m) => ({
-            time: formatTime(m.created_at),
-            value: Number(m[key]),
-          }));
 
-        return (
-          <SingleChart
-            key={key}
-            data={data}
-            dataKey={key}
-            label={label}
-            color={color}
-          />
-        );
-      })}
+    <div className="mt-9">
+      <div className="flex justify-between px-2 py-1.5">
+        <h1 
+          className="text-[var(--text-secondary)] font-medium text-sm uppercase"
+          >Metrics History</h1>
+        <div className="flex gap-2"> 
+          {ranges.map((item) => (
+            <button
+              key={item.value}
+              onClick={() => setRange(item.value)}
+              className={`px-3 py-1.5 cursor-pointer text-sm rounded-md font-medium transition-colors 
+                ${range === item.value ? "bg-[var(--border)] text-white" 
+                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-2)]"}
+                `}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {charts.map(({ key, label, color }) => {
+          const data = [...chartMetrics]
+            .map((m) => ({
+              time: formatTime(m.timestamp),
+              timestamp: m.timestamp,
+              value: Number(m[key]),
+
+            }));
+  
+          return (
+            <SingleChart
+              key={key}
+              data={data}
+              dataKey={key}
+              label={label}
+              color={color}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
+

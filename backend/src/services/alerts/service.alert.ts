@@ -1,22 +1,24 @@
+import { ALERT_CONFIG } from "./alert.config";
 import { createAlert, getActiveAlert, getServerUserId, resolveAlert } from "./alert.helper";
 
 
-export async function evaluteServiceAlert(
+export async function evaluateServiceAlert(
     serverId: string,
+    userId: string,
     serviceName: string,
     status: string
 ) {
-    
-    const userId = await getServerUserId(serverId);
-
+   
     const alertType = "SERVICE_DOWN";
+    const config = ALERT_CONFIG.SERVICE_DOWN
 
     const activeAlert = await getActiveAlert(
         serverId,
-        `${alertType}: ${serviceName}`
+        alertType,
+        serviceName
     )
 
-    if(status !== "active"){
+    if(status !== "running"){
         if(activeAlert){
             return;
         }
@@ -24,9 +26,10 @@ export async function evaluteServiceAlert(
         await createAlert({
             serverId,
             userId,
-            alertType: "SERVICE_DOWN",
-            severity: "critical",
-            message: `Service ${serviceName} is down`,
+            alertType,
+            serviceName,
+            severity: config.severity,
+            message: `Service ${serviceName} is stopped`,
         });
 
 
